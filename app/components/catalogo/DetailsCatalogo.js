@@ -33,7 +33,8 @@ function openDatabase() {
 const db = openDatabase();
 
 export default function DetailsCatalogo(props) {
-  const { refreshing, onRefresh } = props;
+  const { prod } = props;
+  const { ruta_img, desc_prod, precio_prod, marca_prod } = prod;
   const navigation = useNavigation();
   const [isVisible, setIsVisible] = useState(false);
   const [cantidad, setCantidad] = useState("");
@@ -41,77 +42,59 @@ export default function DetailsCatalogo(props) {
   const [total, setTotal] = useState(0);
   const [enabled, setEnabled] = useState(true);
   const [enabledOK, setEnabledOK] = useState(true);
-  let [dataProd, setdataProd] = useState([]);
+
   //console.log(prod);
-
-  useFocusEffect(
-    useCallback(() => {
-      db.transaction((tx) => {
-        tx.executeSql("SELECT * FROM productos;", [], (tx, results) => {
-          var temp = [];
-          for (let i = 0; i < results.rows.length; ++i)
-            temp.push(results.rows.item(i));
-          setdataProd(temp);
-          console.log(temp);
-        });
-      });
-    }, [])
-  );
-
-  let ListProd = (item) => {
-    return (
-      <TouchableOpacity onPress={() => setIsVisible(true)}>
-        <View style={styles.viewProductos}>
-          <View style={styles.viewProductoImg}>
-            <Image
-              resizeMode="cover"
-              PlaceholderContent={<ActivityIndicator color="fff" />}
-              source={
-                item.ruta_img
-                  ? { uri: item.ruta_img }
-                  : require("../../../assets/img/no-image.png")
-              }
-              style={styles.imgProductos}
-            />
-          </View>
-          <View>
-            <Text style={styles.prodName}>{item.desc_prod}</Text>
-            <Text>${item.precio_prod}</Text>
-          </View>
-        </View>
-        <ContentModal
-          isVisible={isVisible}
-          setIsVisible={setIsVisible}
-          setCantidad={setCantidad}
-          cantidad={cantidad}
-          setNotas={setNotas}
-          item={item}
-          notas={notas}
-          total={total}
-          setTotal={setTotal}
-          enabled={enabled}
-          setEnabled={setEnabled}
-          enabledOK={enabledOK}
-          setEnabledOK={setEnabledOK}
-          navigation={navigation}
-        />
-      </TouchableOpacity>
-    );
-  };
 
   return (
     <SafeAreaView>
       <View>
-        <FlatList
-          style={{ marginTop: 10 }}
-          contentContainerStyle={{ paddingHorizontal: 15 }}
-          data={dataProd}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => ListProd(item)}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        />
+        <TouchableOpacity onPress={() => setIsVisible(true)}>
+          <View style={styles.viewProductos}>
+            <View style={styles.viewTexto}>
+              <Text style={styles.prodMarca}>{marca_prod}</Text>
+              <Text style={styles.prodName}>{desc_prod}</Text>
+              <View style={styles.viewImg}>
+                <Image
+                  source={require("../../../assets/img/yellowButton.png")}
+                  style={styles.imgYellow}
+                />
+
+                <Text style={styles.txtPrecio}>Precio:</Text>
+                <Text style={styles.txtImg}>${precio_prod}</Text>
+                <Text style={styles.txtIVA}>+IVA</Text>
+              </View>
+            </View>
+            <View style={styles.viewProductoImg}>
+              <Text style={styles.txtJyF}>JyF Industrial</Text>
+              <Image
+                resizeMode="cover"
+                PlaceholderContent={<ActivityIndicator color="fff" />}
+                source={
+                  ruta_img
+                    ? { uri: ruta_img }
+                    : require("../../../assets/img/no-image.png")
+                }
+                style={styles.imgProductos}
+              />
+            </View>
+          </View>
+          <ContentModal
+            isVisible={isVisible}
+            setIsVisible={setIsVisible}
+            setCantidad={setCantidad}
+            cantidad={cantidad}
+            setNotas={setNotas}
+            item={prod}
+            notas={notas}
+            total={total}
+            setTotal={setTotal}
+            enabled={enabled}
+            setEnabled={setEnabled}
+            enabledOK={enabledOK}
+            setEnabledOK={setEnabledOK}
+            navigation={navigation}
+          />
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -239,19 +222,40 @@ const styles = StyleSheet.create({
   },
   viewProductos: {
     flexDirection: "row",
-    margin: 10,
+    marginTop: 20,
+    height: 200,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+
+    elevation: 4,
   },
   viewProductoImg: {
     marginRight: 15,
   },
   imgProductos: {
-    width: 80,
-    height: 80,
+    width: 130,
+    height: 130,
+    marginTop: "15%",
+  },
+  viewTexto: {
+    marginTop: 30,
   },
   prodName: {
     fontWeight: "bold",
     fontSize: 15,
     width: 230,
+    marginLeft: 10,
+  },
+  prodMarca: {
+    fontWeight: "bold",
+    fontSize: 18,
+    marginLeft: 10,
   },
   Titulo: {
     fontWeight: "bold",
@@ -277,5 +281,58 @@ const styles = StyleSheet.create({
   viewHorizontal: {
     flexDirection: "row",
     width: "100%",
+  },
+  imgYellow: {
+    width: "100%",
+    height: "100%",
+  },
+  viewImg: {
+    position: "relative",
+    width: 150,
+    height: 50,
+    marginTop: 30,
+    marginLeft: 30,
+  },
+  txtImg: {
+    position: "absolute",
+    top: "40%",
+    width: "90%",
+    textAlign: "center",
+    fontSize: 16,
+    color: "white",
+    fontWeight: "bold",
+    textShadowColor: "black",
+    textShadowRadius: 8,
+    textShadowOffset: { width: 1, height: 1 },
+  },
+  txtPrecio: {
+    position: "absolute",
+    top: "10%",
+    color: "white",
+    fontSize: 10,
+    fontWeight: "bold",
+    marginLeft: 10,
+    textShadowColor: "black",
+    textShadowRadius: 8,
+    textShadowOffset: { width: 1, height: 1 },
+  },
+  txtIVA: {
+    position: "absolute",
+    top: "60%",
+    width: "100%",
+    textAlign: "center",
+    fontSize: 10,
+    color: "white",
+    fontWeight: "bold",
+    marginLeft: 30,
+    textShadowColor: "black",
+    textShadowRadius: 8,
+    textShadowOffset: { width: 1, height: 1 },
+  },
+  txtJyF: {
+    fontWeight: "bold",
+    marginLeft: 20,
+    marginTop: 15,
+    fontSize: 10,
   },
 });

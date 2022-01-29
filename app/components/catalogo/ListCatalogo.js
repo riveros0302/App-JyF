@@ -32,7 +32,7 @@ function openDatabase() {
 const db = openDatabase();
 
 class ListCatalogo extends Component {
-  state = { listCat: [] };
+  state = { listCat: [], listProd: [] };
 
   componentDidMount() {
     this.getData();
@@ -44,65 +44,77 @@ class ListCatalogo extends Component {
       .then((response) => {
         this.setState({ listCat: response.data });
         this.sincronizacionProductos();
+        this.getProd();
       });
   };
 
   sincronizacionProductos = () => {
     return this.state.listCat.map((prod) => {
-      db.transaction(
-        (tx) => {
-          tx.executeSql("DELETE FROM productos;", []);
-          tx.executeSql(
-            "INSERT INTO productos (id_prod, nom_prod, desc_prod, marca_prod, precio_prod, ruta_img, cant_prod) values (?, ?, ?, ?, ?, ?, ?)",
-            [
-              prod.id_prod,
-              prod.nom_prod,
-              prod.desc_prod,
-              prod.marca_prod,
-              prod.precio_prod,
-              prod.ruta_img,
-              prod.cant_prod,
-            ]
-          );
-        },
-        null
-        //forceUpdate
-      );
-      return (
-        <DetailsCatalogo
-          key={prod.id_prod}
-          refreshing={this.props.refresh}
-          onRefresh={this.onRefreshh}
-        />
-      );
+      db.transaction((tx) => {
+        tx.executeSql(
+          "INSERT INTO productos (id_prod, nom_prod, desc_prod, marca_prod, precio_prod, ruta_img, cant_prod) values (?, ?, ?, ?, ?, ?, ?)",
+          [
+            prod.id_prod,
+            prod.nom_prod,
+            prod.desc_prod,
+            prod.marca_prod,
+            prod.precio_prod,
+            prod.ruta_img,
+            prod.cant_prod,
+          ]
+        );
+      }, null);
     });
   };
 
-  deleteProductos = () => {
-    db.transaction((tx) => {});
+  listProd = (item) => {
+    return <DetailsCatalogo key={item.id_prod} prod={item} />;
+  };
+
+  getProd = () => {
+    db.transaction((tx) => {
+      tx.executeSql("SELECT * FROM productos;", [], (tx, results) => {
+        var temp = [];
+        for (let i = 0; i < results.rows.length; ++i) {
+          temp.push(results.rows.item(i));
+          console.log(results.rows.item(i));
+        }
+        this.setState({ listProd: temp });
+      });
+    });
   };
 
   onRefreshh = () => {
+    db.transaction((tx) => {
+      tx.executeSql("DELETE FROM productos;", []);
+    });
     //limpiar datos de la lista listCat
     this.setState({ listCat: [] });
     //llamar al servicio para obtener los datos mas recientes
     this.getData();
   };
 
-  ItemSeparatorView = () => {
-    return (
-      <View
-        style={{
-          height: 0.5,
-          width: "100%",
-          backgroundColor: "#C8C8C8",
-        }}
-      />
-    );
-  };
-
   render() {
-    return <View>{this.sincronizacionProductos()}</View>;
+    return (
+      <SafeAreaView>
+        <View>
+          <FlatList
+            style={{ marginTop: 10 }}
+            contentContainerStyle={{ paddingHorizontal: 15 }}
+            data={this.state.listProd}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => this.listProd(item)}
+            refreshControl={
+              <RefreshControl
+                refreshing={this.props.refresh}
+                onRefresh={this.onRefreshh}
+              />
+            }
+          />
+          {this.sincronizacionProductos()}
+        </View>
+      </SafeAreaView>
+    );
   }
 }
 
