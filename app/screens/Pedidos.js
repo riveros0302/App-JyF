@@ -10,22 +10,9 @@ import {
 import * as SQLite from "expo-sqlite";
 import { useFocusEffect } from "@react-navigation/native";
 import Modal from "../components/Modal";
-import { Button } from "react-native-elements";
-function openDatabase() {
-  if (Platform.OS === "web") {
-    return {
-      transaction: () => {
-        return {
-          executeSql: () => {},
-        };
-      },
-    };
-  }
-
-  const db = SQLite.openDatabase("db.db");
-  return db;
-}
-
+import { Button, Icon } from "react-native-elements";
+import { openDatabase } from "../utils/database";
+import { isEmpty } from "lodash";
 const db = openDatabase();
 
 export default function Pedidos() {
@@ -33,6 +20,7 @@ export default function Pedidos() {
   const [isVisible, setIsVisible] = useState(false);
   const [itemID, setItemID] = useState([]);
   const [reload, setReload] = useState(false);
+  const [getDatos, setGetDatos] = useState([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -44,7 +32,6 @@ export default function Pedidos() {
             var temp = [];
             for (let i = 0; i < results.rows.length; ++i) {
               temp.push(results.rows.item(i));
-              //  console.log(results.rows.item(i));
             }
 
             setFlatListItems(temp);
@@ -52,6 +39,7 @@ export default function Pedidos() {
         );
       });
       setReload(false);
+      console.log("aloja");
     }, [reload])
   );
 
@@ -83,6 +71,46 @@ export default function Pedidos() {
     );
   };
 
+  const SendPedidos = () => {
+    db.transaction((tx) => {
+      tx.executeSql("SELECT * FROM datos;", [], (tx, results) => {
+        var temp = [];
+        for (let i = 0; i < results.rows.length; ++i) {
+          temp.push(results.rows.item(i));
+        }
+        setGetDatos(temp);
+      });
+    });
+
+    if (isEmpty(getDatos)) {
+      console.log("toast llenar datos");
+    } else {
+      setReload(true);
+      db.transaction((tx) => {
+        tx.executeSql("DELETE FROM datos;", []);
+        tx.executeSql("DELETE FROM pedidos;", []);
+      });
+
+      console.log("enviando...");
+    }
+  };
+
+  const condition = () => {
+    if (isEmpty(flatListItems)) {
+      return false;
+    } else {
+      return (
+        <Icon
+          reverse
+          type="material-community"
+          name="send"
+          containerStyle={styles.btnFloat}
+          onPress={SendPedidos}
+        />
+      );
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1, backgroundColor: "white" }}>
@@ -109,6 +137,7 @@ export default function Pedidos() {
         itemID={itemID}
         setReload={setReload}
       />
+      {condition()}
     </SafeAreaView>
   );
 }
@@ -198,5 +227,13 @@ const styles = StyleSheet.create({
     alignContent: "flex-end",
     alignItems: "flex-end",
     justifyContent: "flex-end",
+  },
+  btnFloat: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    shadowColor: "black",
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.5,
   },
 });

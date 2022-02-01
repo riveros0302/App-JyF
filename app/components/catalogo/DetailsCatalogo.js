@@ -1,35 +1,16 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
-  FlatList,
   ActivityIndicator,
   TouchableOpacity,
-  RefreshControl,
   SafeAreaView,
 } from "react-native";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { Image, Input, Button } from "react-native-elements";
 import Modal from "../Modal";
-
-import * as SQLite from "expo-sqlite";
-
-function openDatabase() {
-  if (Platform.OS === "web") {
-    return {
-      transaction: () => {
-        return {
-          executeSql: () => {},
-        };
-      },
-    };
-  }
-
-  const db = SQLite.openDatabase("db.db");
-  return db;
-}
-
+import { openDatabase } from "../../utils/database";
 const db = openDatabase();
 
 export default function DetailsCatalogo(props) {
@@ -42,8 +23,6 @@ export default function DetailsCatalogo(props) {
   const [total, setTotal] = useState(0);
   const [enabled, setEnabled] = useState(true);
   const [enabledOK, setEnabledOK] = useState(true);
-
-  //console.log(prod);
 
   return (
     <SafeAreaView>
@@ -92,7 +71,6 @@ export default function DetailsCatalogo(props) {
             setEnabled={setEnabled}
             enabledOK={enabledOK}
             setEnabledOK={setEnabledOK}
-            navigation={navigation}
           />
         </TouchableOpacity>
       </View>
@@ -115,7 +93,6 @@ function ContentModal(props) {
     enabledOK,
     setEnabledOK,
     item,
-    navigation,
   } = props;
 
   const { id_prod, marca_prod, desc_prod, precio_prod, cant_prod } = item;
@@ -331,7 +308,7 @@ const styles = StyleSheet.create({
   },
   txtJyF: {
     fontWeight: "bold",
-    marginLeft: 20,
+    marginLeft: 50,
     marginTop: 15,
     fontSize: 10,
   },

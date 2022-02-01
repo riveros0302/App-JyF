@@ -1,12 +1,11 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import Datos from "../screens/Datos";
 
 const Stack = createStackNavigator();
 
-export default function DatosStack() {
+export default function DatosStack(props) {
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -17,5 +16,3 @@ export default function DatosStack() {
     </Stack.Navigator>
   );
 }
-
-const styles = StyleSheet.create({});

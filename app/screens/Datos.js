@@ -1,204 +1,166 @@
-import { useState, useEffect } from "react";
-import {
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import Constants from "expo-constants";
-import * as SQLite from "expo-sqlite";
-
-function openDatabase() {
-  if (Platform.OS === "web") {
-    return {
-      transaction: () => {
-        return {
-          executeSql: () => {},
-        };
-      },
-    };
-  }
-
-  const db = SQLite.openDatabase("db.db");
-  return db;
-}
-
+import { StyleSheet, Text, View, ScrollView } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { Input, Button } from "react-native-elements";
+import { isEmpty, size } from "lodash";
+import { validateEmail } from "../utils/validations";
+import { openDatabase } from "../utils/database";
 const db = openDatabase();
-
-function Items({ done: doneHeading, onPressItem }) {
-  const [items, setItems] = useState(null);
+export default function Datos() {
+  const [smsNombre, setSmsNombre] = useState("");
+  const [smsApellido, setSmsApellido] = useState("");
+  const [smsEmpresa, setSmsEmpresa] = useState("");
+  const [smsComuna, setSmsComuna] = useState("");
+  const [smsfono, setSmsfono] = useState("");
+  const [smsCorreo, setSmsCorreo] = useState("");
+  const [inputData, setInputData] = useState(defaultInputData());
+  const [titleBtn, setTitleBtn] = useState("Guardar");
 
   useEffect(() => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `select * from items where done = ?;`,
-        [doneHeading ? 1 : 0],
-        (_, { rows: { _array } }) => setItems(_array)
-      );
-    });
+    //  setInputData2(defaultInputData());
   }, []);
 
-  const heading = doneHeading ? "Completed" : "Todo";
-
-  if (items === null || items.length === 0) {
-    return null;
-  }
-
-  return (
-    <View style={styles.sectionContainer}>
-      <Text style={styles.sectionHeading}>{heading}</Text>
-      {items.map(({ id, done, value }) => (
-        <TouchableOpacity
-          key={id}
-          onPress={() => onPressItem && onPressItem(id)}
-          style={{
-            backgroundColor: done ? "#1c9963" : "#fff",
-            borderColor: "#000",
-            borderWidth: 1,
-            padding: 8,
-          }}
-        >
-          <Text style={{ color: done ? "#fff" : "#000" }}>{value}</Text>
-        </TouchableOpacity>
-      ))}
-    </View>
+  useFocusEffect(
+    useCallback(() => {
+      console.log(inputData);
+    }, [])
   );
-}
 
-export default function App() {
-  const [text, setText] = useState(null);
-  const [forceUpdate, forceUpdateId] = useForceUpdate();
+  const deleteDatos = () => {
+    db.transaction((tx) => {
+      tx.executeSql("DELETE FROM datos;", []);
+    });
+  };
 
-  useEffect(() => {
+  const insertDatos = () => {
+    deleteDatos();
     db.transaction((tx) => {
       tx.executeSql(
-        "create table if not exists items (id integer primary key not null, done int, value text);"
+        "INSERT INTO datos (dt_nom, dt_ape, dt_empresa, dt_correo, dt_fono, dt_com) values ( ?, ?, ?, ?, ?, ?)",
+        [
+          inputData.nombre,
+          inputData.apellido,
+          inputData.empresa,
+          inputData.correo,
+          inputData.fono,
+          inputData.comuna,
+        ]
       );
-    });
-  }, []);
+    }, null);
+  };
 
-  const add = (text) => {
-    // is text empty?
-    if (text === null || text === "") {
-      return false;
+  const onSubmit = () => {
+    setSmsNombre("");
+    setSmsApellido("");
+    setSmsEmpresa("");
+    setSmsCorreo("");
+    setSmsfono("");
+    setSmsComuna("");
+
+    if (titleBtn === "Guardar") {
+      if (isEmpty(inputData.nombre)) {
+        setSmsNombre("Indica tu nombre");
+      } else if (isEmpty(inputData.apellido)) {
+        setSmsApellido("Indica tu apellido");
+      } else if (isEmpty(inputData.empresa)) {
+        setSmsEmpresa("Indica el nombre de tu empresa");
+      } else if (isEmpty(inputData.correo)) {
+        setSmsCorreo("Indica tu correo electronico");
+      } else if (!validateEmail(inputData.correo)) {
+        setSmsCorreo("Correo no valido");
+      } else if (isEmpty(inputData.fono)) {
+        setSmsfono("Indica un número de telefono");
+      } else if (size(inputData.fono) < 12) {
+        setSmsfono("Faltan digitos");
+      } else if (isEmpty(inputData.comuna)) {
+        setSmsComuna("Indica tu comuna");
+      } else {
+        insertDatos();
+        setTitleBtn("Actualizar");
+      }
+    } else {
+      insertDatos();
     }
+  };
 
-    db.transaction(
-      (tx) => {
-        tx.executeSql("insert into items (done, value) values (0, ?)", [text]);
-        tx.executeSql("select * from items", [], (_, { rows }) =>
-          console.log(JSON.stringify(rows))
-        );
-      },
-      null,
-      forceUpdate
-    );
+  const onChange = (e, type) => {
+    setInputData({ ...inputData, [type]: e.nativeEvent.text });
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>SQLite Example</Text>
-
-      {Platform.OS === "web" ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text style={styles.heading}>
-            Expo SQlite is not supported on web!
-          </Text>
+    <ScrollView>
+      <View style={styles.viewGeneral}>
+        <View style={styles.viewInputStyle}>
+          <Input
+            label="Nombre"
+            style={styles.inputStyle}
+            onChange={(e) => onChange(e, "nombre")}
+            errorMessage={smsNombre}
+            value={inputData.nombre}
+          />
+          <Input
+            label="Apellido"
+            onChange={(e) => onChange(e, "apellido")}
+            errorMessage={smsApellido}
+            value={inputData.apellido}
+          />
         </View>
-      ) : (
-        <>
-          <View style={styles.flexRow}>
-            <TextInput
-              onChangeText={(text) => setText(text)}
-              onSubmitEditing={() => {
-                add(text);
-                setText(null);
-              }}
-              placeholder="what do you need to do?"
-              style={styles.input}
-              value={text}
-            />
-          </View>
-          <ScrollView style={styles.listArea}>
-            <Items
-              key={`forceupdate-todo-${forceUpdateId}`}
-              done={false}
-              onPressItem={(id) =>
-                db.transaction(
-                  (tx) => {
-                    tx.executeSql(`update items set done = 1 where id = ?;`, [
-                      id,
-                    ]);
-                  },
-                  null,
-                  forceUpdate
-                )
-              }
-            />
-            <Items
-              done
-              key={`forceupdate-done-${forceUpdateId}`}
-              onPressItem={(id) =>
-                db.transaction(
-                  (tx) => {
-                    tx.executeSql(`delete from items where id = ?;`, [id]);
-                  },
-                  null,
-                  forceUpdate
-                )
-              }
-            />
-          </ScrollView>
-        </>
-      )}
-    </View>
+
+        <Input
+          label="Nombre Empresa"
+          onChange={(e) => onChange(e, "empresa")}
+          errorMessage={smsEmpresa}
+          value={inputData.empresa}
+        />
+        <Input
+          label="Correo Electrónico"
+          placeholder="example@gmail.com"
+          keyboardType="email-address"
+          onChange={(e) => onChange(e, "correo")}
+          errorMessage={smsCorreo}
+          value={inputData.correo}
+        />
+        <View style={styles.viewInputStyle}>
+          <Input
+            label="Telefono"
+            keyboardType="phone-pad"
+            errorMessage={smsfono}
+            errorStyle={{ color: "red" }}
+            onChange={(e) => onChange(e, "fono")}
+            defaultValue="+56"
+            value={inputData.fono}
+          />
+          <Input
+            label="Comuna"
+            onChange={(e) => onChange(e, "comuna")}
+            errorMessage={smsComuna}
+            value={inputData.comuna}
+          />
+        </View>
+
+        <Button title={titleBtn} onPress={onSubmit} />
+      </View>
+    </ScrollView>
   );
 }
 
-function useForceUpdate() {
-  const [value, setValue] = useState(0);
-  return [() => setValue(value + 1), value];
+function defaultInputData() {
+  return {
+    nombre: "",
+    apellido: "",
+    empresa: "",
+    correo: "",
+    fono: "",
+    comuna: "",
+  };
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#fff",
-    flex: 1,
-    paddingTop: Constants.statusBarHeight,
-  },
-  heading: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  flexRow: {
+  viewInputStyle: {
     flexDirection: "row",
+    width: "50%",
   },
-  input: {
-    borderColor: "#4630eb",
-    borderRadius: 4,
-    borderWidth: 1,
-    flex: 1,
-    height: 48,
-    margin: 16,
-    padding: 8,
-  },
-  listArea: {
-    backgroundColor: "#f0f0f0",
-    flex: 1,
-    paddingTop: 16,
-  },
-  sectionContainer: {
-    marginBottom: 16,
-    marginHorizontal: 16,
-  },
-  sectionHeading: {
-    fontSize: 18,
-    marginBottom: 8,
+  viewGeneral: {
+    margin: 20,
   },
 });

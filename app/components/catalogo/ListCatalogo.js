@@ -11,24 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import DetailsCatalogo from "./DetailsCatalogo";
-
-import * as SQLite from "expo-sqlite";
-
-function openDatabase() {
-  if (Platform.OS === "web") {
-    return {
-      transaction: () => {
-        return {
-          executeSql: () => {},
-        };
-      },
-    };
-  }
-
-  const db = SQLite.openDatabase("db.db");
-  return db;
-}
-
+import { openDatabase } from "../../utils/database";
 const db = openDatabase();
 
 class ListCatalogo extends Component {
@@ -77,7 +60,6 @@ class ListCatalogo extends Component {
         var temp = [];
         for (let i = 0; i < results.rows.length; ++i) {
           temp.push(results.rows.item(i));
-          console.log(results.rows.item(i));
         }
         this.setState({ listProd: temp });
       });
