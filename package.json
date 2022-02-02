@@ -16,6 +16,8 @@
     "@react-navigation/stack": "~5.2.10",
     "@react-pdf/renderer": "^2.1.1",
     "axios": "^0.24.0",
+    "buffer": "^6.0.3",
+    "events": "^3.3.0",
     "expo": "~44.0.0",
     "expo-sqlite": "~10.1.0",
     "expo-status-bar": "~1.2.0",

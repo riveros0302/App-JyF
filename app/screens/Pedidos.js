@@ -7,11 +7,12 @@ import {
   FlatList,
   SafeAreaView,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import Modal from "../components/Modal";
 import { Button, Icon } from "react-native-elements";
 import { openDatabase } from "../utils/database";
 import { isEmpty } from "lodash";
+import DocumentPDF from "../components/pdf/DocumentPDF";
 const db = openDatabase();
 
 export default function Pedidos() {
@@ -20,6 +21,8 @@ export default function Pedidos() {
   const [itemID, setItemID] = useState([]);
   const [reload, setReload] = useState(false);
   const [getDatos, setGetDatos] = useState([]);
+  const [btnPDF, setBtnPDF] = useState(false);
+  const navigation = useNavigation();
 
   useFocusEffect(
     useCallback(() => {
@@ -84,10 +87,11 @@ export default function Pedidos() {
       console.log("toast llenar datos");
     } else {
       setReload(true);
-      db.transaction((tx) => {
+      setBtnPDF(true);
+      /* db.transaction((tx) => {
         tx.executeSql("DELETE FROM datos;", []);
         tx.executeSql("DELETE FROM pedidos;", []);
-      });
+      });*/
 
       console.log("enviando...");
     }
@@ -109,11 +113,15 @@ export default function Pedidos() {
     }
   };
 
+  const verPDF = () => {
+    navigation.navigate("documento");
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1, backgroundColor: "white" }}>
         <View style={{ flex: 1 }}>
-          <Button title="ver PDF" />
+          <Button title="ver PDF" onPress={verPDF} />
           <View style={styles.HeaderPedidos}>
             <Text style={styles.headerText}>ID</Text>
             <Text style={styles.headerText}>Descripción</Text>
@@ -130,6 +138,8 @@ export default function Pedidos() {
           />
         </View>
       </View>
+      {btnPDF ? <DocumentPDF /> : null}
+
       <ModalPedidos
         isVisible={isVisible}
         setIsVisible={setIsVisible}
