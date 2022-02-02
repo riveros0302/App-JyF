@@ -7,7 +7,6 @@ import {
   FlatList,
   SafeAreaView,
 } from "react-native";
-import * as SQLite from "expo-sqlite";
 import { useFocusEffect } from "@react-navigation/native";
 import Modal from "../components/Modal";
 import { Button, Icon } from "react-native-elements";
@@ -39,7 +38,6 @@ export default function Pedidos() {
         );
       });
       setReload(false);
-      console.log("aloja");
     }, [reload])
   );
 
@@ -115,6 +113,7 @@ export default function Pedidos() {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1, backgroundColor: "white" }}>
         <View style={{ flex: 1 }}>
+          <Button title="ver PDF" />
           <View style={styles.HeaderPedidos}>
             <Text style={styles.headerText}>ID</Text>
             <Text style={styles.headerText}>Descripción</Text>

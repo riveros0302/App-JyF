@@ -149,6 +149,7 @@ function ContentModal(props) {
           <Image
             source={require("../../../assets/img/Logo.png")}
             style={{ width: 100, height: 100 }}
+            PlaceholderContent={<ActivityIndicator color="fff" />}
           />
         </View>
 
@@ -202,15 +203,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     height: 200,
     width: "100%",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.23,
-    shadowRadius: 2.62,
-
-    elevation: 4,
   },
   viewProductoImg: {
     marginRight: 15,
@@ -308,7 +300,7 @@ const styles = StyleSheet.create({
   },
   txtJyF: {
     fontWeight: "bold",
-    marginLeft: 50,
+    marginLeft: "15%",
     marginTop: 15,
     fontSize: 10,
   },

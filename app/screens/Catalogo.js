@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, SafeAreaView, ScrollView, RefreshControl } from "react-native";
 
 import ListCatalogo from "../components/catalogo/ListCatalogo";
 import { openDatabase } from "../utils/database";

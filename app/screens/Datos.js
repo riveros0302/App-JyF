@@ -1,11 +1,18 @@
-import { StyleSheet, Text, View, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  InteractionManager,
+} from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { Input, Button } from "react-native-elements";
 import { isEmpty, size } from "lodash";
 import { validateEmail } from "../utils/validations";
 import { openDatabase } from "../utils/database";
 const db = openDatabase();
+
 export default function Datos() {
   const [smsNombre, setSmsNombre] = useState("");
   const [smsApellido, setSmsApellido] = useState("");
@@ -15,16 +22,21 @@ export default function Datos() {
   const [smsCorreo, setSmsCorreo] = useState("");
   const [inputData, setInputData] = useState(defaultInputData());
   const [titleBtn, setTitleBtn] = useState("Guardar");
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    //  setInputData2(defaultInputData());
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      console.log(inputData);
-    }, [])
-  );
+    db.transaction((tx) => {
+      tx.executeSql("SELECT * FROM datos;", [], (tx, results) => {
+        if (results.rows.length === 0) {
+          console.log("datos = 0");
+          setInputData(defaultInputData());
+          setTitleBtn("Guardar");
+        } else {
+          console.log("datos = 1");
+        }
+      });
+    });
+  }, [isFocused]);
 
   const deleteDatos = () => {
     db.transaction((tx) => {

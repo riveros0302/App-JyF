@@ -5,7 +5,7 @@ import Datos from "../screens/Datos";
 
 const Stack = createStackNavigator();
 
-export default function DatosStack(props) {
+export default function DatosStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen

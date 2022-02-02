@@ -10,6 +10,6 @@ export function openDatabase() {
       },
     };
   }
-  const db = SQLite.openDatabase("db.db", 2);
+  const db = SQLite.openDatabase("db.db", 3);
   return db;
 }
