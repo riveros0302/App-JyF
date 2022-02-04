@@ -142,7 +142,7 @@ function ContentModal(props) {
     <Modal isVisible={isVisible} setIsVisible={setIsVisible}>
       <View>
         <View style={styles.viewHorizontal}>
-          <View>
+          <View style={{ width: "70%" }}>
             <Text style={styles.Titulo}>{marca_prod}</Text>
             <Text style={styles.prodName}>{desc_prod}</Text>
           </View>
@@ -159,7 +159,7 @@ function ContentModal(props) {
         <View style={styles.viewHorizontal}>
           <Input
             placeholder="Cantidad"
-            containerStyle={{ width: "85%" }}
+            containerStyle={{ width: "80%" }}
             onChange={onChange}
             value={cantidad.toString()}
             keyboardType="numeric"
@@ -171,21 +171,23 @@ function ContentModal(props) {
               size: 15,
               color: "white",
             }}
+            buttonStyle={{ width: 65, height: 50, backgroundColor: "#00a680" }}
             onPress={CalcularTotal}
             disabled={enabled}
           />
         </View>
 
-        <Input
+        {/* <Input
           placeholder="Nota"
           multiline={true}
           inputContainerStyle={styles.textArea}
           onChange={(e) => setNotas(e.nativeEvent.text)}
-        />
+       />*/}
         <Button
           title="CONFIRMAR"
           onPress={SubmitConfirmar}
           disabled={enabledOK}
+          buttonStyle={{ backgroundColor: "#00a680" }}
         />
       </View>
     </Modal>
@@ -208,8 +210,8 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   imgProductos: {
-    width: 130,
-    height: 130,
+    width: "70%",
+    height: "70%",
     marginTop: "15%",
   },
   viewTexto: {
@@ -293,7 +295,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "white",
     fontWeight: "bold",
-    marginLeft: 30,
+    marginLeft: 40,
     textShadowColor: "black",
     textShadowRadius: 8,
     textShadowOffset: { width: 1, height: 1 },
@@ -303,5 +305,16 @@ const styles = StyleSheet.create({
     marginLeft: "15%",
     marginTop: 15,
     fontSize: 10,
+  },
+  shadowview: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+
+    elevation: 4,
   },
 });

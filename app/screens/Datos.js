@@ -150,7 +150,11 @@ export default function Datos() {
           />
         </View>
 
-        <Button title={titleBtn} onPress={onSubmit} />
+        <Button
+          title={titleBtn}
+          onPress={onSubmit}
+          buttonStyle={{ backgroundColor: "#00a680" }}
+        />
       </View>
     </ScrollView>
   );

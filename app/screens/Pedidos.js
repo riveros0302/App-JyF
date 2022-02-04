@@ -6,13 +6,15 @@ import {
   TouchableOpacity,
   FlatList,
   SafeAreaView,
+  Platform,
+  Share,
 } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import Modal from "../components/Modal";
-import { Button, Icon } from "react-native-elements";
+import { Button, Icon, Input } from "react-native-elements";
 import { openDatabase } from "../utils/database";
 import { isEmpty } from "lodash";
-import DocumentPDF from "../components/pdf/DocumentPDF";
+import * as Print from "expo-print";
 const db = openDatabase();
 
 export default function Pedidos() {
@@ -21,7 +23,7 @@ export default function Pedidos() {
   const [itemID, setItemID] = useState([]);
   const [reload, setReload] = useState(false);
   const [getDatos, setGetDatos] = useState([]);
-  const [btnPDF, setBtnPDF] = useState(false);
+  const [inputData, setInputData] = useState({ nota: "" });
   const navigation = useNavigation();
 
   useFocusEffect(
@@ -43,6 +45,136 @@ export default function Pedidos() {
       setReload(false);
     }, [reload])
   );
+
+  const htmlcontent = `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Pdf Content</title>
+      <style>
+      table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+      }
+      
+      td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+      }
+      
+      tr:nth-child(even) {
+        background-color: #dddddd;
+      }
+
+      {
+        box-sizing: border-box;
+      }
+      
+
+      .column {
+        float: left;
+        width: 30%;
+        padding: 10px;
+        height: 200px;
+      }
+      
+      .row:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+      img {
+        width: 100%;
+      }
+      </style>
+  </head>
+  <body>
+  </div>
+  <div>
+
+  <h1>Pedido de ${getDatos.map((x) => x.dt_nom + " " + x.dt_ape)}</h1>
+
+  <div class="row">
+  <div class="column" >
+    <h3>Datos cliente</h3>
+    <p>${getDatos.map((x) => x.dt_nom + " " + x.dt_ape)}</p>
+    <p>${getDatos.map((x) => x.dt_empresa)}</p>
+    <p>${getDatos.map((x) => x.dt_com)}</p>
+    <p>${getDatos.map((x) => x.dt_fono)}</p>
+  </div>
+
+  <div class="column" >
+    <h3>Fecha Pedido</h3>
+    <p>04-02-2022</p>
+    <b />
+    <h3>Correo</h3>
+    <p>${getDatos.map((x) => x.dt_correo)}</p>
+  </div>
+
+  <div class="column" >
+  <img src="http://jyfindustrial.cl/php_crud/imagenes/Logo.png" alt="HTML5 Icon" style="width:128px;height:128px;margin-top:-80px;float:right;">
+</div>
+</div>
+
+  <hr />
+
+  <div>
+  <table>
+  <tr>
+    <th>ID</th>
+    <th>Descripción</th>
+    <th>Cant.</th>
+    <th>Total</th>
+  </tr>
+  ${htmltable()}
+  </table>
+  <h3>Nota: ${inputData.nota}</h3>
+  </div>
+  </div>
+  </body>
+  </html>
+  `;
+
+  function htmltable() {
+    let t = "";
+    // for (let i = 0; i < flatListItems.length; i++) {
+    flatListItems.map((x) => {
+      t =
+        t +
+        `<tr>
+       <td>${x.id_ped}</td>
+       <td>${x.desc_prod}</td>
+       <td>${x.cant_ped}</td>
+       <td>${x.total_ped}</td>
+     </tr>`;
+    });
+
+    //   }
+    return t;
+  }
+
+  const crearPDF = async (html) => {
+    try {
+      const { uri } = await Print.printToFileAsync({ html });
+      if (Platform.OS === "ios") {
+        await Share.share({
+          message: "mensajito",
+          title: "Share file",
+          url: uri,
+        });
+      } else {
+        // const result =
+        await shareAsync(uri);
+        // console.log("shareAsync result: ", result);
+      }
+    } catch (error) {
+      //  console.error(error);
+    }
+  };
 
   const first = (item) => {
     setIsVisible(true);
@@ -87,13 +219,13 @@ export default function Pedidos() {
       console.log("toast llenar datos");
     } else {
       setReload(true);
-      setBtnPDF(true);
-      /* db.transaction((tx) => {
+      crearPDF(htmlcontent);
+      db.transaction((tx) => {
         tx.executeSql("DELETE FROM datos;", []);
         tx.executeSql("DELETE FROM pedidos;", []);
-      });*/
+      });
 
-      console.log("enviando...");
+      // console.log(getDatos.values);
     }
   };
 
@@ -113,15 +245,19 @@ export default function Pedidos() {
     }
   };
 
-  const verPDF = () => {
-    navigation.navigate("documento");
+  const onChange = (e, type) => {
+    setInputData({ ...inputData, [type]: e.nativeEvent.text });
   };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1, backgroundColor: "white" }}>
         <View style={{ flex: 1 }}>
-          <Button title="ver PDF" onPress={verPDF} />
+          <Input
+            label="Nota"
+            containerStyle={{ height: "15%" }}
+            onChange={(e) => onChange(e, "nota")}
+          />
           <View style={styles.HeaderPedidos}>
             <Text style={styles.headerText}>ID</Text>
             <Text style={styles.headerText}>Descripción</Text>
@@ -138,7 +274,6 @@ export default function Pedidos() {
           />
         </View>
       </View>
-      {btnPDF ? <DocumentPDF /> : null}
 
       <ModalPedidos
         isVisible={isVisible}
@@ -208,16 +343,13 @@ const styles = StyleSheet.create({
   },
   HeaderPedidos: {
     flexDirection: "row",
-    borderColor: "black",
-    borderRadius: 4,
-    borderWidth: 2,
     marginLeft: 20,
     marginRight: 20,
   },
   headerText: {
     fontSize: 18,
     fontWeight: "bold",
-    paddingLeft: "5%",
+    paddingLeft: "2%",
     paddingRight: "3%",
   },
   textDesc: {
@@ -241,8 +373,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 10,
     right: 10,
-    shadowColor: "black",
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+
+    elevation: 5,
   },
 });

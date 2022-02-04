@@ -1,6 +1,5 @@
 import { StyleSheet, View, Text, Image } from "react-native";
 import React from "react";
-//import { Document, Page } from "@react-pdf/renderer";
 export default function DocumentPDF() {
   return (
     <View>
