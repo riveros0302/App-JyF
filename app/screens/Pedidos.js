@@ -12,9 +12,12 @@ import {
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import Modal from "../components/Modal";
 import { Button, Icon, Input } from "react-native-elements";
+import { LinearGradient } from "expo-linear-gradient";
+import Swipeout from "react-native-swipeout";
 import { openDatabase } from "../utils/database";
 import { isEmpty } from "lodash";
 import * as Print from "expo-print";
+import Loading from "../components/Loading";
 const db = openDatabase();
 
 export default function Pedidos() {
@@ -24,6 +27,7 @@ export default function Pedidos() {
   const [reload, setReload] = useState(false);
   const [getDatos, setGetDatos] = useState([]);
   const [inputData, setInputData] = useState({ nota: "" });
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
 
   useFocusEffect(
@@ -43,6 +47,7 @@ export default function Pedidos() {
         );
       });
       setReload(false);
+      getCurrentDate();
     }, [reload])
   );
 
@@ -109,7 +114,7 @@ export default function Pedidos() {
 
   <div class="column" >
     <h3>Fecha Pedido</h3>
-    <p>04-02-2022</p>
+    <p>${getCurrentDate()}</p>
     <b />
     <h3>Correo</h3>
     <p>${getDatos.map((x) => x.dt_correo)}</p>
@@ -149,12 +154,21 @@ export default function Pedidos() {
        <td>${x.id_ped}</td>
        <td>${x.desc_prod}</td>
        <td>${x.cant_ped}</td>
-       <td>${x.total_ped}</td>
+       <td>$${x.total_ped}</td>
      </tr>`;
     });
 
     //   }
     return t;
+  }
+
+  function getCurrentDate() {
+    var dia = new Date().getDate();
+    var mes = new Date().getMonth() + 1;
+    var year = new Date().getFullYear();
+    var hour = new Date().getHours();
+    var minute = new Date().getMinutes();
+    return `<p>${dia + "-" + mes + "-" + year + " " + hour + ":" + minute}</p>`;
   }
 
   const crearPDF = async (html) => {
@@ -166,6 +180,7 @@ export default function Pedidos() {
           title: "Share file",
           url: uri,
         });
+        setIsLoading(false);
       } else {
         // const result =
         await shareAsync(uri);
@@ -181,11 +196,36 @@ export default function Pedidos() {
     setItemID(item);
   };
 
+  const deletePedido = (id) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "DELETE FROM pedidos WHERE id_ped = ?",
+        [id],
+        (tx, results) => {
+          console.log("id pedido borrado: " + id);
+          setReload(true);
+          setIsVisible(false);
+        }
+      );
+    });
+  };
+
   let listItemView = (item) => {
     return (
-      <View>
-        <TouchableOpacity
-          key={item.id_ped}
+      <Swipeout
+        rowId={item.id_ped}
+        autoClose={true}
+        right={[
+          {
+            text: "Eliminar",
+            backgroundColor: "red",
+            onPress: () => {
+              deletePedido(item.id_ped);
+            },
+          },
+        ]}
+      >
+        <View
           style={{
             backgroundColor: "#EEE",
             marginTop: 10,
@@ -193,14 +233,13 @@ export default function Pedidos() {
             borderRadius: 10,
             flexDirection: "row",
           }}
-          onPress={() => first(item)}
         >
           <Text style={styles.textbottom}>{item.id_ped}</Text>
           <Text style={styles.textDesc}>{item.desc_prod}</Text>
           <Text style={styles.textbottom}>{item.cant_ped}</Text>
           <Text style={styles.texttotal}>${item.total_ped}</Text>
-        </TouchableOpacity>
-      </View>
+        </View>
+      </Swipeout>
     );
   };
 
@@ -218,6 +257,7 @@ export default function Pedidos() {
     if (isEmpty(getDatos)) {
       console.log("toast llenar datos");
     } else {
+      setIsLoading(true);
       setReload(true);
       crearPDF(htmlcontent);
       db.transaction((tx) => {
@@ -251,11 +291,15 @@ export default function Pedidos() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1, backgroundColor: "white" }}>
-        <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
+        <LinearGradient
+          style={styles.linearGradient}
+          colors={["rgba(255,255,255,1)", "rgba(255,255,255,0)"]}
+        >
           <Input
             label="Nota"
-            containerStyle={{ height: "15%" }}
+            labelStyle={{ fontSize: 20 }}
+            containerStyle={{ height: 100, marginTop: 30 }}
             onChange={(e) => onChange(e, "nota")}
           />
           <View style={styles.HeaderPedidos}>
@@ -272,7 +316,8 @@ export default function Pedidos() {
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => listItemView(item)}
           />
-        </View>
+          <Loading isVisible={isLoading} text="Generando PDF..." />
+        </LinearGradient>
       </View>
 
       <ModalPedidos
@@ -336,31 +381,35 @@ const styles = StyleSheet.create({
   },
   textbottom: {
     color: "#111",
-    fontSize: 18,
-    paddingRight: "5%",
-    paddingLeft: "3%",
+    fontSize: 30,
+    paddingLeft: 15,
     width: "17%",
   },
   HeaderPedidos: {
     flexDirection: "row",
-    marginLeft: 20,
-    marginRight: 20,
+    height: 60,
+    borderRadius: 10,
+    marginLeft: 10,
+    marginRight: 10,
+    backgroundColor: "#00a680",
   },
   headerText: {
-    fontSize: 18,
+    fontSize: 30,
     fontWeight: "bold",
-    paddingLeft: "2%",
-    paddingRight: "3%",
+    paddingLeft: 20,
+    paddingRight: 120,
+    color: "white",
+    alignSelf: "center",
   },
   textDesc: {
     width: "42%",
-    fontSize: 18,
+    fontSize: 30,
     color: "black",
     paddingRight: "10%",
   },
   texttotal: {
     color: "#111",
-    fontSize: 18,
+    fontSize: 30,
   },
   btnStyle: {
     backgroundColor: "red",
@@ -371,8 +420,8 @@ const styles = StyleSheet.create({
   },
   btnFloat: {
     position: "absolute",
-    bottom: 10,
-    right: 10,
+    bottom: 50,
+    right: 50,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -382,5 +431,8 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
 
     elevation: 5,
+  },
+  linearGradient: {
+    height: "100%",
   },
 });

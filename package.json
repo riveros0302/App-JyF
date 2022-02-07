@@ -11,15 +11,16 @@
   },
   "dependencies": {
     "@react-native-community/masked-view": "~0.1.6",
+    "@react-native/normalize-color": "^2.0.0",
     "@react-navigation/bottom-tabs": "~5.2.6",
     "@react-navigation/native": "~5.1.5",
     "@react-navigation/stack": "~5.2.10",
-    "@react-pdf/renderer": "^2.1.1",
     "axios": "^0.24.0",
     "buffer": "^6.0.3",
     "events": "^3.3.0",
     "expo": "~44.0.0",
     "expo-file-system": "~13.1.2",
+    "expo-linear-gradient": "~11.0.1",
     "expo-mail-composer": "~11.1.0",
     "expo-print": "~11.1.0",
     "expo-sharing": "~10.1.0",
@@ -39,6 +40,7 @@
     "react-native-safe-area-context": "~3.3.2",
     "react-native-screens": "~3.10.1",
     "react-native-sqlite-storage": "^6.0.1",
+    "react-native-swipeout": "^2.3.6",
     "react-native-web": "0.17.1"
   },
   "devDependencies": {

@@ -11,7 +11,7 @@ export default function Catalogo() {
   useEffect(() => {
     db.transaction((tx) => {
       tx.executeSql(
-        "CREATE TABLE IF NOT EXISTS pedidos (id_ped INTEGER PRIMARY KEY NOT NULL, cant_ped INT, total_ped TEXT, id_prod INT REFERENCES productos(id_prod), nota_ped TEXT);"
+        "CREATE TABLE IF NOT EXISTS pedidos (id_ped INTEGER PRIMARY KEY NOT NULL, cant_ped INT, total_ped INT, id_prod INT REFERENCES productos(id_prod), nota_ped TEXT);"
       );
       tx.executeSql(
         "CREATE TABLE IF NOT EXISTS productos (id_prod INTEGER PRIMARY KEY NOT NULL, nom_prod TEXT, desc_prod TEXT, marca_prod TEXT, precio_prod INT, ruta_img TEXT, cant_prod INT);"

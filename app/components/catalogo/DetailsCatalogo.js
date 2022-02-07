@@ -8,6 +8,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Image, Input, Button } from "react-native-elements";
 import Modal from "../Modal";
 import { openDatabase } from "../../utils/database";
@@ -27,52 +28,57 @@ export default function DetailsCatalogo(props) {
   return (
     <SafeAreaView>
       <View>
-        <TouchableOpacity onPress={() => setIsVisible(true)}>
-          <View style={styles.viewProductos}>
-            <View style={styles.viewTexto}>
-              <Text style={styles.prodMarca}>{marca_prod}</Text>
-              <Text style={styles.prodName}>{desc_prod}</Text>
-              <View style={styles.viewImg}>
-                <Image
-                  source={require("../../../assets/img/yellowButton.png")}
-                  style={styles.imgYellow}
-                />
+        <LinearGradient
+          style={styles.linearGradient}
+          colors={["rgba(255,255,255,0.5)", "rgba(255,255,255,1)"]}
+        >
+          <TouchableOpacity onPress={() => setIsVisible(true)}>
+            <View style={styles.viewProductos}>
+              <View style={styles.viewTexto}>
+                <Text style={styles.prodMarca}>{marca_prod}</Text>
+                <Text style={styles.prodName}>{desc_prod}</Text>
+                <View style={styles.viewImg}>
+                  <Image
+                    source={require("../../../assets/img/yellowButton.png")}
+                    style={styles.imgYellow}
+                  />
 
-                <Text style={styles.txtPrecio}>Precio:</Text>
-                <Text style={styles.txtImg}>${precio_prod}</Text>
-                <Text style={styles.txtIVA}>+IVA</Text>
+                  <Text style={styles.txtPrecio}>Precio:</Text>
+                  <Text style={styles.txtImg}>${precio_prod}</Text>
+                  <Text style={styles.txtIVA}>+IVA</Text>
+                </View>
+              </View>
+              <View style={styles.viewProductoImg}>
+                <Text style={styles.txtJyF}>JyF Industrial</Text>
+                <Image
+                  resizeMode="cover"
+                  PlaceholderContent={<ActivityIndicator color="fff" />}
+                  source={
+                    ruta_img
+                      ? { uri: ruta_img }
+                      : require("../../../assets/img/no-image.png")
+                  }
+                  style={styles.imgProductos}
+                />
               </View>
             </View>
-            <View style={styles.viewProductoImg}>
-              <Text style={styles.txtJyF}>JyF Industrial</Text>
-              <Image
-                resizeMode="cover"
-                PlaceholderContent={<ActivityIndicator color="fff" />}
-                source={
-                  ruta_img
-                    ? { uri: ruta_img }
-                    : require("../../../assets/img/no-image.png")
-                }
-                style={styles.imgProductos}
-              />
-            </View>
-          </View>
-          <ContentModal
-            isVisible={isVisible}
-            setIsVisible={setIsVisible}
-            setCantidad={setCantidad}
-            cantidad={cantidad}
-            setNotas={setNotas}
-            item={prod}
-            notas={notas}
-            total={total}
-            setTotal={setTotal}
-            enabled={enabled}
-            setEnabled={setEnabled}
-            enabledOK={enabledOK}
-            setEnabledOK={setEnabledOK}
-          />
-        </TouchableOpacity>
+            <ContentModal
+              isVisible={isVisible}
+              setIsVisible={setIsVisible}
+              setCantidad={setCantidad}
+              cantidad={cantidad}
+              setNotas={setNotas}
+              item={prod}
+              notas={notas}
+              total={total}
+              setTotal={setTotal}
+              enabled={enabled}
+              setEnabled={setEnabled}
+              enabledOK={enabledOK}
+              setEnabledOK={setEnabledOK}
+            />
+          </TouchableOpacity>
+        </LinearGradient>
       </View>
     </SafeAreaView>
   );
@@ -140,7 +146,14 @@ function ContentModal(props) {
 
   return (
     <Modal isVisible={isVisible} setIsVisible={setIsVisible}>
-      <View>
+      <View
+        style={{
+          height: 700,
+          width: 700,
+          alignSelf: "center",
+          justifyContent: "center",
+        }}
+      >
         <View style={styles.viewHorizontal}>
           <View style={{ width: "70%" }}>
             <Text style={styles.Titulo}>{marca_prod}</Text>
@@ -148,7 +161,7 @@ function ContentModal(props) {
           </View>
           <Image
             source={require("../../../assets/img/Logo.png")}
-            style={{ width: 100, height: 100 }}
+            style={{ width: 200, height: 200 }}
             PlaceholderContent={<ActivityIndicator color="fff" />}
           />
         </View>
@@ -159,7 +172,8 @@ function ContentModal(props) {
         <View style={styles.viewHorizontal}>
           <Input
             placeholder="Cantidad"
-            containerStyle={{ width: "80%" }}
+            containerStyle={{ width: "88%", marginTop: 30 }}
+            style={{ fontSize: 30 }}
             onChange={onChange}
             value={cantidad.toString()}
             keyboardType="numeric"
@@ -168,10 +182,10 @@ function ContentModal(props) {
             icon={{
               name: "check-outline",
               type: "material-community",
-              size: 15,
+              size: 25,
               color: "white",
             }}
-            buttonStyle={{ width: 65, height: 50, backgroundColor: "#00a680" }}
+            buttonStyle={{ width: 80, height: 70, backgroundColor: "#00a680" }}
             onPress={CalcularTotal}
             disabled={enabled}
           />
@@ -187,7 +201,8 @@ function ContentModal(props) {
           title="CONFIRMAR"
           onPress={SubmitConfirmar}
           disabled={enabledOK}
-          buttonStyle={{ backgroundColor: "#00a680" }}
+          buttonStyle={{ backgroundColor: "#00a680", height: 80 }}
+          titleStyle={{ fontSize: 30 }}
         />
       </View>
     </Modal>
@@ -200,48 +215,56 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     alignItems: "center",
   },
+  TouchStyle: {
+    backgroundColor: "white",
+    marginTop: 20,
+  },
   viewProductos: {
+    flex: 1,
     flexDirection: "row",
     marginTop: 20,
-    height: 200,
+    height: 400,
     width: "100%",
   },
   viewProductoImg: {
-    marginRight: 15,
+    flex: 1,
   },
   imgProductos: {
-    width: "70%",
-    height: "70%",
-    marginTop: "15%",
+    width: 250,
+    height: 250,
+    marginTop: 30,
+    marginLeft: 100,
   },
   viewTexto: {
-    marginTop: 30,
+    flex: 1,
+    justifyContent: "center",
+    marginLeft: 20,
   },
   prodName: {
     fontWeight: "bold",
-    fontSize: 15,
-    width: 230,
+    fontSize: 30,
     marginLeft: 10,
   },
   prodMarca: {
     fontWeight: "bold",
-    fontSize: 18,
+    fontSize: 50,
     marginLeft: 10,
   },
   Titulo: {
     fontWeight: "bold",
-    fontSize: 25,
+    fontSize: 40,
+    marginLeft: 10,
   },
   contentProd: {
     marginTop: 20,
-    fontSize: 15,
+    fontSize: 30,
   },
   contentProdBottom: {
     marginBottom: 20,
-    fontSize: 15,
+    fontSize: 30,
   },
   contentPrecio: {
-    fontSize: 15,
+    fontSize: 30,
   },
   textArea: {
     height: 100,
@@ -259,17 +282,17 @@ const styles = StyleSheet.create({
   },
   viewImg: {
     position: "relative",
-    width: 150,
-    height: 50,
+    width: 250,
+    height: 80,
     marginTop: 30,
-    marginLeft: 30,
+    alignSelf: "center",
   },
   txtImg: {
     position: "absolute",
-    top: "40%",
+    top: "30%",
     width: "90%",
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 30,
     color: "white",
     fontWeight: "bold",
     textShadowColor: "black",
@@ -280,7 +303,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "10%",
     color: "white",
-    fontSize: 10,
+    fontSize: 20,
     fontWeight: "bold",
     marginLeft: 10,
     textShadowColor: "black",
@@ -289,22 +312,23 @@ const styles = StyleSheet.create({
   },
   txtIVA: {
     position: "absolute",
-    top: "60%",
+    top: "50%",
     width: "100%",
     textAlign: "center",
-    fontSize: 10,
+    fontSize: 15,
     color: "white",
     fontWeight: "bold",
-    marginLeft: 40,
+    marginLeft: 60,
     textShadowColor: "black",
     textShadowRadius: 8,
     textShadowOffset: { width: 1, height: 1 },
   },
   txtJyF: {
     fontWeight: "bold",
-    marginLeft: "15%",
+    alignSelf: "flex-end",
+    marginRight: 20,
     marginTop: 15,
-    fontSize: 10,
+    fontSize: 20,
   },
   shadowview: {
     shadowColor: "#000",
@@ -316,5 +340,10 @@ const styles = StyleSheet.create({
     shadowRadius: 2.62,
 
     elevation: 4,
+  },
+  linearGradient: {
+    flex: 1,
+    borderRadius: 5,
+    marginTop: 30,
   },
 });

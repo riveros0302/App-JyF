@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Image, Dimensions } from "react-native";
+
 import {
   NavigationContainer,
   DefaultTheme,
@@ -13,13 +15,33 @@ import PedidosStack from "./PedidosStack";
 const Tab = createBottomTabNavigator();
 
 export default function Navigation() {
+  const { height, width } = Dimensions.get("screen");
+  const MyTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: "transparent",
+    },
+  };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={MyTheme}>
+      <Image
+        source={require("../../assets/img/Fondo.jpg")}
+        style={{
+          height,
+          width,
+          position: "absolute",
+          opacity: 0.7,
+        }}
+      />
       <Tab.Navigator
         initialRouteName="catalogo"
         tabBarOptions={{
           inactiveTintColor: "#646464",
           activeTintColor: "#00a680",
+          tabStyle: { marginTop: -20, backgroundColor: "white" },
+          labelStyle: { fontSize: 20 },
         }}
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color }) => screenOptions(route, color),

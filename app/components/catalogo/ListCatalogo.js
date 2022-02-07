@@ -10,12 +10,13 @@ import {
   FlatList,
   ActivityIndicator,
 } from "react-native";
+import { SearchBar } from "react-native-elements";
 import DetailsCatalogo from "./DetailsCatalogo";
 import { openDatabase } from "../../utils/database";
 const db = openDatabase();
 
 class ListCatalogo extends Component {
-  state = { listCat: [], listProd: [] };
+  state = { listCat: [], listProd: [], isLoading: true, search: "" };
 
   componentDidMount() {
     this.getData();
@@ -25,10 +26,20 @@ class ListCatalogo extends Component {
     axios
       .get("http://jyfindustrial.cl/php_crud/Lista_Productos_sqlite.php")
       .then((response) => {
-        this.setState({ listCat: response.data });
+        this.setState({
+          listCat: response.data,
+          isLoading: false,
+        });
         this.sincronizacionProductos();
         this.getProd();
       });
+  };
+
+  search = (text) => {
+    console.log(text);
+  };
+  clear = () => {
+    this.search.clear();
   };
 
   sincronizacionProductos = () => {
@@ -76,10 +87,52 @@ class ListCatalogo extends Component {
     this.getData();
   };
 
+  SearchFilterFunction(text) {
+    //passing the inserted text in textinput
+    // const newData = this.listCat.filter(function (item) {
+    const newData = this.state.listCat.filter(function (item) {
+      //applying filter for the inserted text in search bar
+      const itemData = item.desc_prod
+        ? item.desc_prod.toUpperCase()
+        : "".toUpperCase();
+      /* const itemData2 = item.marca_prod
+        ? item.marca_prod.toUpperCase()
+        : "".toUpperCase();*/
+      const textData = text.toUpperCase();
+      return itemData.indexOf(textData) > -1;
+    });
+
+    this.setState({
+      //setting the filtered newData on datasource
+      //After setting the data it will automatically re-render the view
+      listProd: newData,
+      search: text,
+    });
+  }
+
   render() {
+    if (this.state.isLoading) {
+      // Loading View while data is loading
+      return (
+        <View style={{ flex: 1, paddingTop: 20 }}>
+          <ActivityIndicator />
+        </View>
+      );
+    }
     return (
       <SafeAreaView>
         <View>
+          <SearchBar
+            round
+            searchIcon={{ size: 24 }}
+            onChangeText={(text) => this.SearchFilterFunction(text)}
+            onClear={(text) => this.SearchFilterFunction("")}
+            placeholder="Buscar..."
+            value={this.state.search}
+            containerStyle={{
+              backgroundColor: "rgba(52, 52, 52, 0.5)",
+            }}
+          />
           <FlatList
             style={{ marginTop: 10 }}
             contentContainerStyle={{ paddingHorizontal: 15 }}
