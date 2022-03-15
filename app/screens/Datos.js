@@ -111,16 +111,16 @@ export default function Datos() {
             <View style={styles.viewInputStyle}>
               <Input
                 label="Nombre"
-                labelStyle={{ fontSize: 30 }}
-                style={{ fontSize: 30 }}
+                labelStyle={{ fontSize: 25 }}
+                style={{ fontSize: 25 }}
                 onChange={(e) => onChange(e, "nombre")}
                 errorMessage={smsNombre}
                 value={inputData.nombre}
               />
               <Input
                 label="Apellido"
-                labelStyle={{ fontSize: 30 }}
-                style={{ fontSize: 30 }}
+                labelStyle={{ fontSize: 25 }}
+                style={{ fontSize: 25 }}
                 onChange={(e) => onChange(e, "apellido")}
                 errorMessage={smsApellido}
                 value={inputData.apellido}
@@ -129,8 +129,8 @@ export default function Datos() {
 
             <Input
               label="Nombre Empresa"
-              labelStyle={{ fontSize: 30 }}
-              style={{ fontSize: 30 }}
+              labelStyle={{ fontSize: 25 }}
+              style={{ fontSize: 25 }}
               containerStyle={{ marginTop: 40 }}
               onChange={(e) => onChange(e, "empresa")}
               errorMessage={smsEmpresa}
@@ -138,8 +138,8 @@ export default function Datos() {
             />
             <Input
               label="Correo Electrónico"
-              labelStyle={{ fontSize: 30 }}
-              style={{ fontSize: 30 }}
+              labelStyle={{ fontSize: 25 }}
+              style={{ fontSize: 25 }}
               containerStyle={{ marginTop: 40 }}
               placeholder="example@gmail.com"
               keyboardType="email-address"
@@ -150,8 +150,8 @@ export default function Datos() {
             <View style={styles.viewInputStyle}>
               <Input
                 label="Telefono"
-                labelStyle={{ fontSize: 30 }}
-                style={{ fontSize: 30 }}
+                labelStyle={{ fontSize: 25 }}
+                style={{ fontSize: 25 }}
                 containerStyle={{ marginTop: 40 }}
                 keyboardType="phone-pad"
                 placeholder="+569"
@@ -163,8 +163,8 @@ export default function Datos() {
               />
               <Input
                 label="Comuna"
-                labelStyle={{ fontSize: 30 }}
-                style={{ fontSize: 30 }}
+                labelStyle={{ fontSize: 25 }}
+                style={{ fontSize: 25 }}
                 containerStyle={{ marginTop: 40 }}
                 onChange={(e) => onChange(e, "comuna")}
                 errorMessage={smsComuna}
@@ -182,7 +182,7 @@ export default function Datos() {
             height: 80,
             borderRadius: 20,
           }}
-          titleStyle={{ fontSize: 30 }}
+          titleStyle={{ fontSize: 25 }}
         />
       </View>
     </ScrollView>

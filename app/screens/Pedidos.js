@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -15,9 +15,10 @@ import { Button, Icon, Input } from "react-native-elements";
 import { LinearGradient } from "expo-linear-gradient";
 import Swipeout from "react-native-swipeout";
 import { openDatabase } from "../utils/database";
-import { isEmpty } from "lodash";
+import { isEmpty, size } from "lodash";
 import * as Print from "expo-print";
 import Loading from "../components/Loading";
+import Toast from "react-native-easy-toast";
 const db = openDatabase();
 
 export default function Pedidos() {
@@ -28,7 +29,7 @@ export default function Pedidos() {
   const [getDatos, setGetDatos] = useState([]);
   const [inputData, setInputData] = useState({ nota: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const navigation = useNavigation();
+  const toastRef = useRef();
 
   useFocusEffect(
     useCallback(() => {
@@ -95,6 +96,11 @@ export default function Pedidos() {
       img {
         width: 100%;
       }
+      .border {
+        border: 0px;
+        text-align: left;
+        padding: 8px;
+      }
       </style>
   </head>
   <body>
@@ -133,9 +139,27 @@ export default function Pedidos() {
     <th>ID</th>
     <th>Descripción</th>
     <th>Cant.</th>
-    <th>Total</th>
+    <th>SubTotal</th>
   </tr>
   ${htmltable()}
+  <tr>
+  <td class="border"></td>
+  <td class="border"></td>
+  <td>Total Bruto</td>
+  <td>$${sumaBruto()}</td>
+  </tr>
+  <tr>
+  <td class="border"></td>
+  <td class="border"></td>
+  <td>IVA 19%</td>
+  <td>$${iva()}</td>
+  </tr>
+  <tr>
+  <td class="border"></td>
+  <td class="border"></td>
+  <td>Total</td>
+  <td>$${totaltotal()}</td>
+  </tr>
   </table>
   <h3>Nota: ${inputData.nota}</h3>
   </div>
@@ -143,6 +167,24 @@ export default function Pedidos() {
   </body>
   </html>
   `;
+
+  function sumaBruto() {
+    const suma = flatListItems.reduce((acc, item) => acc + item.total_ped, 0);
+    return suma;
+  }
+
+  function iva() {
+    const suma = flatListItems.reduce((acc, item) => acc + item.total_ped, 0);
+    const iva = (suma * 19) / 100;
+    return iva.toFixed();
+  }
+
+  function totaltotal() {
+    const suma = flatListItems.reduce((acc, item) => acc + item.total_ped, 0);
+    const iva = (suma * 19) / 100;
+    const tt = suma - iva;
+    return tt.toFixed();
+  }
 
   function htmltable() {
     let t = "";
@@ -176,7 +218,8 @@ export default function Pedidos() {
       const { uri } = await Print.printToFileAsync({ html });
       if (Platform.OS === "ios") {
         await Share.share({
-          message: "mensajito",
+          message:
+            "Pedido de: " + getDatos.map((x) => x.dt_nom + " " + x.dt_ape),
           title: "Share file",
           url: uri,
         });
@@ -189,11 +232,6 @@ export default function Pedidos() {
     } catch (error) {
       //  console.error(error);
     }
-  };
-
-  const first = (item) => {
-    setIsVisible(true);
-    setItemID(item);
   };
 
   const deletePedido = (id) => {
@@ -237,16 +275,16 @@ export default function Pedidos() {
           <Text style={styles.textbottom}>{item.id_ped}</Text>
           <Text style={styles.textDesc}>{item.desc_prod}</Text>
           <Text style={styles.textbottom}>{item.cant_ped}</Text>
-          <Text style={styles.texttotal}>${item.total_ped}</Text>
+          <Text style={styles.texttotal}>$ {item.total_ped}</Text>
         </View>
       </Swipeout>
     );
   };
 
   const SendPedidos = () => {
+    var temp = [];
     db.transaction((tx) => {
       tx.executeSql("SELECT * FROM datos;", [], (tx, results) => {
-        var temp = [];
         for (let i = 0; i < results.rows.length; ++i) {
           temp.push(results.rows.item(i));
         }
@@ -254,12 +292,16 @@ export default function Pedidos() {
       });
     });
 
-    if (isEmpty(getDatos)) {
+    if (size(getDatos) === 0) {
       console.log("toast llenar datos");
+      toastRef.current.show("Completa el formulario de Mis Datos");
     } else {
+      setIsVisible(false);
       setIsLoading(true);
       setReload(true);
       crearPDF(htmlcontent);
+
+      //Eliminar los pedidos despues de crear el PDF
       db.transaction((tx) => {
         tx.executeSql("DELETE FROM datos;", []);
         tx.executeSql("DELETE FROM pedidos;", []);
@@ -274,13 +316,21 @@ export default function Pedidos() {
       return false;
     } else {
       return (
-        <Icon
-          reverse
-          type="material-community"
-          name="send"
-          containerStyle={styles.btnFloat}
-          onPress={SendPedidos}
-        />
+        <View>
+          <Input
+            placeholder={"Nota"}
+            inputStyle={{ fontSize: 25 }}
+            containerStyle={{ height: 100, width: "82%", paddingLeft: 30 }}
+            onChange={(e) => onChange(e, "nota")}
+          />
+          <Icon
+            reverse
+            type="material-community"
+            name="send"
+            containerStyle={styles.btnFloat}
+            onPress={() => setIsVisible(true)}
+          />
+        </View>
       );
     }
   };
@@ -296,12 +346,6 @@ export default function Pedidos() {
           style={styles.linearGradient}
           colors={["rgba(255,255,255,1)", "rgba(255,255,255,0)"]}
         >
-          <Input
-            label="Nota"
-            labelStyle={{ fontSize: 20 }}
-            containerStyle={{ height: 100, marginTop: 30 }}
-            onChange={(e) => onChange(e, "nota")}
-          />
           <View style={styles.HeaderPedidos}>
             <Text style={styles.headerText}>ID</Text>
             <Text style={styles.headerText}>Descripción</Text>
@@ -323,38 +367,25 @@ export default function Pedidos() {
       <ModalPedidos
         isVisible={isVisible}
         setIsVisible={setIsVisible}
-        itemID={itemID}
-        setReload={setReload}
+        toastRef={toastRef}
+        SendPedidos={SendPedidos}
       />
+
       {condition()}
     </SafeAreaView>
   );
 }
 
 function ModalPedidos(props) {
-  const { isVisible, setIsVisible, itemID, setReload } = props;
-  const { id_ped, desc_prod, id_prod } = itemID;
-
-  const deletePedido = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "DELETE FROM pedidos WHERE id_ped = ?",
-        [id_ped],
-        (tx, results) => {
-          console.log("id pedido borrado");
-          setReload(true);
-          setIsVisible(false);
-        }
-      );
-    });
-  };
+  const { isVisible, setIsVisible, SendPedidos, toastRef } = props;
 
   return (
     <Modal isVisible={isVisible} setIsVisible={setIsVisible}>
       <View>
-        <Text>eliminar pedido ID: {id_ped}</Text>
-        <Text>
-          {id_prod} descripcion: {desc_prod}
+        <Text style={{ fontSize: 20 }}>¿Estas seguro de enviar el pedido?</Text>
+        <Text style={{ color: "grey", marginTop: 10 }}>
+          una vez confirmado se eliminarán los datos del cliente y la lista de
+          productos seleccionados
         </Text>
         <View
           style={{
@@ -363,11 +394,17 @@ function ModalPedidos(props) {
           }}
         >
           <Button
-            title={"Eliminar"}
-            buttonStyle={styles.btnStyle}
-            onPress={deletePedido}
+            title={"Confirmar"}
+            titleStyle={{ fontSize: 15 }}
+            onPress={SendPedidos}
+            buttonStyle={{
+              backgroundColor: "#00a680",
+              borderRadius: 15,
+              marginTop: 20,
+            }}
           />
         </View>
+        <Toast ref={toastRef} position="center" opacity={0.9} />
       </View>
     </Modal>
   );
@@ -381,7 +418,7 @@ const styles = StyleSheet.create({
   },
   textbottom: {
     color: "#111",
-    fontSize: 30,
+    fontSize: 25,
     paddingLeft: 15,
     width: "17%",
   },
@@ -394,22 +431,23 @@ const styles = StyleSheet.create({
     backgroundColor: "#00a680",
   },
   headerText: {
-    fontSize: 30,
+    fontSize: 25,
     fontWeight: "bold",
-    paddingLeft: 20,
-    paddingRight: 120,
+    paddingLeft: 30,
+    paddingRight: 90,
     color: "white",
     alignSelf: "center",
   },
   textDesc: {
     width: "42%",
-    fontSize: 30,
+    fontSize: 25,
     color: "black",
-    paddingRight: "10%",
+    paddingRight: "9%",
   },
   texttotal: {
     color: "#111",
-    fontSize: 30,
+    fontSize: 25,
+    paddingLeft: 20,
   },
   btnStyle: {
     backgroundColor: "red",

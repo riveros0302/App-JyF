@@ -41,7 +41,7 @@ export default function Navigation() {
           inactiveTintColor: "#646464",
           activeTintColor: "#00a680",
           tabStyle: { marginTop: -20, backgroundColor: "white" },
-          labelStyle: { fontSize: 20 },
+          labelStyle: { fontSize: 15 },
         }}
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color }) => screenOptions(route, color),

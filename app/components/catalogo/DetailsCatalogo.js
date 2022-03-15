@@ -12,6 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Image, Input, Button } from "react-native-elements";
 import Modal from "../Modal";
 import { openDatabase } from "../../utils/database";
+import { isEmpty } from "lodash";
 const db = openDatabase();
 
 export default function DetailsCatalogo(props) {
@@ -21,7 +22,7 @@ export default function DetailsCatalogo(props) {
   const [isVisible, setIsVisible] = useState(false);
   const [cantidad, setCantidad] = useState("");
   const [notas, setNotas] = useState("");
-  const [total, setTotal] = useState(0);
+
   const [enabled, setEnabled] = useState(true);
   const [enabledOK, setEnabledOK] = useState(true);
 
@@ -70,8 +71,6 @@ export default function DetailsCatalogo(props) {
               setNotas={setNotas}
               item={prod}
               notas={notas}
-              total={total}
-              setTotal={setTotal}
               enabled={enabled}
               setEnabled={setEnabled}
               enabledOK={enabledOK}
@@ -92,8 +91,6 @@ function ContentModal(props) {
     setNotas,
     notas,
     cantidad,
-    total,
-    setTotal,
     enabled,
     setEnabled,
     enabledOK,
@@ -104,6 +101,8 @@ function ContentModal(props) {
   const { id_prod, marca_prod, desc_prod, precio_prod, cant_prod } = item;
 
   const [saveCantidad, setSaveCantidad] = useState("");
+  const [EnabledDto, setEnabledDto] = useState(true);
+  const [total, setTotal] = useState(0);
 
   const addPedido = (cantidad, total, id_prod, notas) => {
     if (
@@ -122,26 +121,35 @@ function ContentModal(props) {
     }, null);
   };
 
-  const CalcularTotal = () => {
-    setTotal(cantidad * precio_prod);
-    setSaveCantidad(cantidad);
-    setCantidad("");
-    setEnabled(true);
-    setEnabledOK(false);
+  const onChange = (e) => {
+    if (e.nativeEvent.text === "" || e.nativeEvent.text === "0") {
+      setEnabledOK(true);
+      setEnabledDto(true);
+    } else {
+      setEnabledOK(false);
+      setEnabledDto(false);
+    }
+    setTotal(e.nativeEvent.text * precio_prod);
+    setSaveCantidad(e.nativeEvent.text);
   };
 
-  const onChange = (e) => {
-    setCantidad(e.nativeEvent.text);
+  const onChangeDto = (e) => {
+    let dto;
+    let totalInterno;
+    totalInterno = saveCantidad * precio_prod;
+    dto = (totalInterno * e.nativeEvent.text) / 100;
+    setTotal(totalInterno - dto);
     if (e.nativeEvent.text === "") {
-      setEnabled(true);
-    } else {
-      setEnabled(false);
+      setTotal(saveCantidad * precio_prod);
     }
   };
 
   const SubmitConfirmar = () => {
     addPedido(saveCantidad, total, id_prod, notas);
+
     setIsVisible(false);
+    setTotal(0);
+    setEnabledOK(true);
   };
 
   return (
@@ -155,11 +163,12 @@ function ContentModal(props) {
         }}
       >
         <View style={styles.viewHorizontal}>
-          <View style={{ width: "70%" }}>
+          <View style={{ width: "65%" }}>
             <Text style={styles.Titulo}>{marca_prod}</Text>
             <Text style={styles.prodName}>{desc_prod}</Text>
           </View>
           <Image
+            containerStyle={{ marginTop: -30 }}
             source={require("../../../assets/img/Logo.png")}
             style={{ width: 200, height: 200 }}
             PlaceholderContent={<ActivityIndicator color="fff" />}
@@ -169,26 +178,38 @@ function ContentModal(props) {
         <Text style={styles.contentProd}>Cantidades: {cant_prod}</Text>
         <Text style={styles.contentPrecio}>Precio: ${precio_prod}</Text>
         <Text style={styles.contentProdBottom}>Total: {total}</Text>
-        <View style={styles.viewHorizontal}>
+        <View>
           <Input
             placeholder="Cantidad"
-            containerStyle={{ width: "88%", marginTop: 30 }}
-            style={{ fontSize: 30 }}
+            containerStyle={{ width: "81%", marginTop: 30, marginLeft: 30 }}
+            style={{ fontSize: 25 }}
             onChange={onChange}
-            value={cantidad.toString()}
             keyboardType="numeric"
           />
-          <Button
+          <Input
+            placeholder="Descuento"
+            containerStyle={{ width: "81%", marginTop: 10, marginLeft: 30 }}
+            style={{ fontSize: 25 }}
+            onChange={onChangeDto}
+            keyboardType="numeric"
+            disabled={EnabledDto}
+          />
+          {/*  <Button
             icon={{
               name: "check-outline",
               type: "material-community",
               size: 25,
               color: "white",
             }}
-            buttonStyle={{ width: 80, height: 70, backgroundColor: "#00a680" }}
+            buttonStyle={{
+              width: 80,
+              height: 70,
+              backgroundColor: "#00a680",
+              borderRadius: 20,
+            }}
             onPress={CalcularTotal}
             disabled={enabled}
-          />
+          />*/}
         </View>
 
         {/* <Input
@@ -201,8 +222,14 @@ function ContentModal(props) {
           title="CONFIRMAR"
           onPress={SubmitConfirmar}
           disabled={enabledOK}
-          buttonStyle={{ backgroundColor: "#00a680", height: 80 }}
-          titleStyle={{ fontSize: 30 }}
+          buttonStyle={{
+            backgroundColor: "#00a680",
+            height: 70,
+            marginLeft: 30,
+            marginRight: 30,
+            borderRadius: 20,
+          }}
+          titleStyle={{ fontSize: 25 }}
         />
       </View>
     </Modal>
@@ -242,29 +269,32 @@ const styles = StyleSheet.create({
   },
   prodName: {
     fontWeight: "bold",
-    fontSize: 30,
-    marginLeft: 10,
+    fontSize: 25,
+    marginLeft: 30,
   },
   prodMarca: {
     fontWeight: "bold",
-    fontSize: 50,
+    fontSize: 40,
     marginLeft: 10,
   },
   Titulo: {
     fontWeight: "bold",
     fontSize: 40,
-    marginLeft: 10,
+    marginLeft: 30,
   },
   contentProd: {
     marginTop: 20,
-    fontSize: 30,
+    fontSize: 25,
+    marginLeft: 30,
   },
   contentProdBottom: {
     marginBottom: 20,
-    fontSize: 30,
+    fontSize: 25,
+    marginLeft: 30,
   },
   contentPrecio: {
-    fontSize: 30,
+    fontSize: 25,
+    marginLeft: 30,
   },
   textArea: {
     height: 100,

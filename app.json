@@ -2,9 +2,9 @@
   "expo": {
     "name": "App-JyF",
     "slug": "App-JyF",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/img/Logo.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -15,7 +15,7 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "bundleIdentifier": "com.riveros0302.AppJyF",
+      "bundleIdentifier": "com.riveros0302.JyFRN",
       "supportsTablet": true
     },
     "android": {
